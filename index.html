@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>蟲神器 ひとり回し</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;color:#20291e;background:#f4f5ed}
+*{box-sizing:border-box}body{margin:0}header{background:#203d2b;color:white;padding:18px 16px}h1{font-size:1.35rem;margin:0 0 5px}header p{margin:0;color:#d9e6d8;font-size:.9rem}
+main{max-width:1100px;margin:auto;padding:14px;display:grid;gap:14px}.panel{background:white;border:1px solid #dce2d6;border-radius:14px;padding:14px;box-shadow:0 2px 8px #1b3b2010}h2{font-size:1.05rem;margin:0 0 10px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}input,select,button{font:inherit;border-radius:9px;border:1px solid #c8d1c2;padding:9px 11px}input,select{background:#fff;min-width:0;flex:1}button{cursor:pointer;background:#e8efe5;color:#203d2b;font-weight:650}button.primary{background:#285b3c;color:#fff;border-color:#285b3c}button.danger{background:#fff0ee;color:#8a3026}.muted{color:#657064;font-size:.85rem}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:9px;margin-top:12px}.card{border:1px solid #d5ddcf;border-radius:11px;padding:10px;min-height:112px;display:flex;flex-direction:column;gap:7px;background:#fbfcf8}.card strong{font-size:.95rem}.pill{font-size:.74rem;color:#53624f;background:#e9eee4;border-radius:99px;padding:3px 7px;width:max-content}.card button{margin-top:auto;padding:7px}.zones{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px}.zone{border:1px solid #d7dfd1;border-radius:11px;padding:10px;min-height:120px;background:#fafbf7}.zone h3{font-size:.92rem;margin:0 0 8px;display:flex;justify-content:space-between}.token{font-size:.84rem;background:#e9efe5;padding:6px 8px;border-radius:7px;margin:5px 0;display:flex;justify-content:space-between;gap:6px;align-items:center}.token button{padding:2px 6px;font-size:.8rem}.small{font-size:.8rem}.empty{color:#8a9386;font-size:.85rem}.status{padding:10px;background:#f0f5ec;border-radius:9px;margin:10px 0}.topstats{display:flex;gap:8px;flex-wrap:wrap}.stat{background:#edf2e8;border-radius:9px;padding:8px 10px;font-size:.85rem}.stat b{font-size:1.1rem;display:block}
+@media(min-width:800px){main{grid-template-columns:1fr 1fr}.game{grid-column:1/-1}.catalog{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header><h1>蟲神器 ひとり回し</h1><p>カード検索・デッキ作成・ひとり回し用の試作版</p></header>
+<main>
+<section class="panel">
+<h2>① デッキ作成</h2>
+<div class="row"><input id="deckName" placeholder="デッキ名（例：青緑デッキ）"><button id="saveDeck">デッキ保存</button></div>
+<div class="status"><b id="deckCount">0 / 20 枚</b><div class="muted">カードを検索して「デッキに追加」。20枚で対戦開始できます。</div></div>
+<div id="deckList"></div>
+<div class="row" style="margin-top:10px"><button class="primary" id="startGame">このデッキで開始・シャッフル</button><button id="clearDeck" class="danger">デッキを空にする</button></div>
+<div id="savedDecks" class="muted" style="margin-top:10px"></div>
+</section>
+<section class="panel">
+<h2>② カード検索</h2>
+<div class="row"><input id="search" placeholder="カード名で検索"><select id="kind"><option value="">すべての種類</option><option>虫</option><option>術</option><option>強化</option></select></div>
+<div class="row" style="margin-top:8px"><input id="customName" placeholder="カード名を手入力して追加"><select id="customKind"><option>虫</option><option>術</option><option>強化</option></select><button id="addCustom">カード登録</button></div>
+<p class="muted">現在は操作確認用の初期カード＋手入力登録に対応。全カードの公式画像・全件データは未取り込みです。</p>
+<div class="cards" id="catalog"></div>
+</section>
+<section class="panel game">
+<h2>③ ひとり回し</h2>
+<div class="topstats"><div class="stat"><b id="deckLeft">—</b>山札</div><div class="stat"><b id="handCount">0</b>手札</div><div class="stat"><b id="fieldCount">0</b>場</div><div class="stat"><b id="foodCount">0</b>餌場</div><div class="stat"><b id="discardCount">0</b>捨て札</div></div>
+<div class="row" style="margin:10px 0"><button class="primary" id="draw">1枚引く</button><button id="draw5">初手5枚を引く</button><button id="shuffle">山札をシャッフル</button><button id="resetGame" class="danger">対戦リセット</button></div>
+<div class="zones" id="zones"></div>
+<p class="muted">各カードの移動先を選んで移動できます。カードの効果処理は自動化していません。</p>
+</section>
+<section class="panel catalog">
+<h2>カードデータについて</h2>
+<p>全カード一覧・画像の参照先として、既存のカードデータベースも利用できます。</p>
+<p><a href="https://illusta.jp/mjcd/" target="_blank" rel="noopener">蟲導 MUSHI-Shirube（カード検索・デッキ管理）</a> ／ <a href="https://www.mushijingi-cardlist.com/card-list/" target="_blank" rel="noopener">蟲神器 最強データベース（カード一覧）</a></p>
+<p class="muted">このサイトは個人用の非公式ツールです。カード名・画像の全件データは現在未収録です。</p>
+</section>
+</main>
+<script>
+const initial=[
+["カブトムシ","虫"],["ヘラクレスオオカブト","虫"],["ギラファノコギリクワガタ","虫"],["オオクワガタ","虫"],["カマキリ","虫"],["オオカマキリ","虫"],["ナナフシ","虫"],["ハナカマキリ","虫"],["トノサマバッタ","虫"],["ショウリョウバッタ","虫"],["アブラゼミ","虫"],["ミンミンゼミ","虫"],["オニヤンマ","虫"],["ギンヤンマ","虫"],["モンシロチョウ","虫"],["アゲハチョウ","虫"],["タガメ","虫"],["ゲンゴロウ","虫"],["ミズカマキリ","虫"],["クロヤマアリ","虫"],["オオスズメバチ","虫"],["ミツバチ","虫"],["カイコ","虫"],["ハナムグリの甲冑","強化"],["玉響","術"],["神隠し","術"],["蜉蝣","術"],["蟲の息吹","術"],["塵芥虫の爆熱弾","術"],["瀬戸際の虫時雨","術"],["蜜蝋の壁","強化"],["蟲の目覚め","術"]
+].map((x,i)=>({id:"seed"+i,name:x[0],kind:x[1],custom:false}));
+let cards=JSON.parse(localStorage.getItem("mushiCards")||"null")||initial;
+let deck=[], zones={hand:[],field:[],food:[],discard:[]}, drawPile=[];
+const $=id=>document.getElementById(id);
+function persist(){localStorage.setItem("mushiCards",JSON.stringify(cards))}
+function renderCatalog(){let q=$("search").value.trim().toLowerCase(), k=$("kind").value;let found=cards.filter(c=>c.name.toLowerCase().includes(q)&&(!k||c.kind===k));$("catalog").innerHTML="";found.slice(0,160).forEach(c=>{let el=document.createElement("div");el.className="card";el.innerHTML='<span class="pill">'+esc(c.kind)+'</span><strong>'+esc(c.name)+'</strong><span class="muted small">'+(c.custom?"手入力登録":"カード名データ")+'</span><button>デッキに追加</button>';el.querySelector("button").onclick=()=>addDeck(c.id);$("catalog").append(el)});if(!found.length)$("catalog").innerHTML='<p class="empty">該当カードなし。手入力で登録できます。</p>'}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function addDeck(id){if(deck.length>=20){alert("デッキは20枚までです");return}let c=cards.find(x=>x.id===id);if(c){deck.push(c.id);renderDeck()}}
+function renderDeck(){$("deckCount").textContent=deck.length+" / 20 枚";let counts={};deck.forEach(id=>counts[id]=(counts[id]||0)+1);$("deckList").innerHTML=Object.entries(counts).map(([id,n])=>{let c=cards.find(x=>x.id===id);return '<div class="token"><span>'+esc(c?.name||"不明")+' × '+n+'</span><span><button data-id="'+id+'" data-op="minus">−</button> <button data-id="'+id+'" data-op="plus">＋</button></span></div>'}).join("")||'<p class="empty">まだカードがありません。</p>';$("deckList").querySelectorAll("button").forEach(b=>b.onclick=()=>{if(b.dataset.op==="plus")addDeck(b.dataset.id);else{let i=deck.lastIndexOf(b.dataset.id);if(i>=0)deck.splice(i,1);renderDeck()}})}
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function start(){if(deck.length!==20){alert("デッキを20枚にしてください（現在"+deck.length+"枚）");return}drawPile=shuffle([...deck]);zones={hand:[],field:[],food:[],discard:[]};renderZones();drawCards(5);document.querySelector(".game").scrollIntoView({behavior:"smooth"})}
+const zoneNames={hand:"手札",field:"場",food:"餌場",discard:"捨て札"};
+function drawCards(n){for(let i=0;i<n&&drawPile.length;i++)zones.hand.push(drawPile.pop());renderZones()}
+function renderZones(){$("deckLeft").textContent=drawPile.length;$("handCount").textContent=zones.hand.length;$("fieldCount").textContent=zones.field.length;$("foodCount").textContent=zones.food.length;$("discardCount").textContent=zones.discard.length;$("zones").innerHTML=Object.entries(zoneNames).map(([key,name])=>'<div class="zone"><h3>'+name+' <span>'+zones[key].length+'枚</span></h3>'+(zones[key].map((id,i)=>{let c=cards.find(x=>x.id===id);return '<div class="token"><span>'+esc(c?.name||"不明")+'</span><select data-zone="'+key+'" data-index="'+i+'" aria-label="移動先"><option value="">移動…</option>'+Object.entries(zoneNames).filter(([z])=>z!==key).map(([z,n])=>'<option value="'+z+'">'+n+'</option>').join("")+'</select></div>'}).join("")||'<div class="empty">カードなし</div>')+'</div>').join("");$("zones").querySelectorAll("select").forEach(s=>s.onchange=()=>{if(!s.value)return;let card=zones[s.dataset.zone].splice(+s.dataset.index,1)[0];zones[s.value].push(card);renderZones()})}
+$("search").oninput=renderCatalog;$("kind").onchange=renderCatalog;
+$("addCustom").onclick=()=>{let name=$("customName").value.trim();if(!name)return alert("カード名を入力してください");if(cards.some(c=>c.name===name))return alert("同じ名前のカードが登録済みです");cards.push({id:"custom"+Date.now(),name,kind:$("customKind").value,custom:true});persist();$("customName").value="";renderCatalog()};
+$("clearDeck").onclick=()=>{if(confirm("デッキを空にしますか？")){deck=[];renderDeck()}};
+$("startGame").onclick=start;$("draw").onclick=()=>drawCards(1);$("draw5").onclick=()=>drawCards(5);$("shuffle").onclick=()=>{shuffle(drawPile);renderZones()};$("resetGame").onclick=()=>{if(confirm("対戦状態をリセットしますか？")){drawPile=[];zones={hand:[],field:[],food:[],discard:[]};renderZones()}};
+$("saveDeck").onclick=()=>{if(!deck.length)return alert("デッキにカードを追加してください");let saved=JSON.parse(localStorage.getItem("mushiDecks")||"[]");saved.push({name:$("deckName").value.trim()||"デッキ "+(saved.length+1),deck:[...deck]});localStorage.setItem("mushiDecks",JSON.stringify(saved));renderSaved()};
+function renderSaved(){let saved=JSON.parse(localStorage.getItem("mushiDecks")||"[]");$("savedDecks").innerHTML=saved.length?"保存済みデッキ："+saved.map((d,i)=>'<button data-i="'+i+'">'+esc(d.name)+'（'+d.deck.length+'枚）を読み込む</button> <button class="danger" data-del="'+i+'">削除</button>').join(" "):"保存済みデッキはありません";$("savedDecks").querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{deck=[...saved[+b.dataset.i].deck].slice(0,20);$("deckName").value=saved[+b.dataset.i].name;renderDeck()});$("savedDecks").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{saved.splice(+b.dataset.del,1);localStorage.setItem("mushiDecks",JSON.stringify(saved));renderSaved()})}
+renderCatalog();renderDeck();renderSaved();renderZones();
+</script>
+</body></html>
